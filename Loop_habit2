@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop - מעקב הרגלים</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:active {
+            opacity: 0.9;
+        }
+        .habit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .habit-item:last-child {
+            border-bottom: none;
+        }
+        .habit-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .check-btn {
+            background: #e2e8f0;
+            color: var(--text-light);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .check-btn.completed {
+            background: var(--success);
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            color: var(--text-light);
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>מעקב הרגלים</h1>
+        
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="habitInput" placeholder="הכנס הרגל חדש (למשל: שתיית מים)...">
+                <button onclick="addHabit()">הוסף</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="habitsList">
+                <div class="empty-state">אין עדיין הרגלים. הוסף הרגל חדש למעלה!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let habits = JSON.parse(localStorage.getItem('loop_habits')) || [];
+
+        function saveAndRender() {
+            localStorage.setItem('loop_habits', JSON.stringify(habits));
+            renderHabits();
+        }
+
+        function addHabit() {
+            const input = document.getElementById('habitInput');
+            const name = input.value.trim();
+            if (!name) return;
+
+            habits.push({ id: Date.now(), name: name, completed: false });
+            input.value = '';
+            saveAndRender();
+        }
+
+        function toggleHabit(id) {
+            habits = habits.map(h => h.id === id ? { ...h, completed: !h.completed } : h);
+            saveAndRender();
+        }
+
+        function renderHabits() {
+            const list = document.getElementById('habitsList');
+            if (habits.length === 0) {
+                list.innerHTML = '<div class="empty-state">אין עדיין הרגלים. הוסף הרגל חדש למעלה!</div>';
+                return;
+            }
+
+            list.innerHTML = habits.map(h => `
+                <div class="habit-item">
+                    <span class="habit-name">${h.name}</span>
+                    <div class="check-btn ${h.completed ? 'completed' : ''}" onclick="toggleHabit(${h.id})">
+                        ${h.completed ? '✓' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
